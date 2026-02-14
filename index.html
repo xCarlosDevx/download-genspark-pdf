@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="keywords"
+        content="download genspark pdf, genspark to pdf, export genspark slides, genspark presentation pdf, how to download genspark pdf">
+    <meta name="description"
+        content="Free tool to download Genspark presentations as PDF. Convert Genspark slides to PDF easily without backend. Simple, fast and secure">
+    <meta name="robots" content="index, follow">
+    <meta property="og:description" content="Convert Genspark slides into PDF easily. Free and simple tool.">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Download Genspark Presentation as PDF">
+    <meta name="author" content="xCarlosDevx">
+
+    <title>Download Genspark Presentation as PDF | Free Online Tool</title>
+
+    <style>
+        :root {
+            --primary: #002D62;
+            --accent: #CE1126;
+            --bg: #f4f6f9;
+            --warning: #fff4e5;
+            --warning-border: #ffb74d;
+            --success: #e8f5e9;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+        }
+
+        .panel {
+            max-width: 900px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            margin: 0 0 20px 0;
+            color: var(--primary);
+        }
+
+        textarea {
+            width: 100%;
+            height: 180px;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        .primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .primary:hover {
+            background: var(--accent);
+        }
+
+        .secondary {
+            background: #e9eef5;
+        }
+
+        .secondary:hover {
+            background: #d9e2ef;
+        }
+
+        .info-box {
+            margin-top: 20px;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .info-warning {
+            background: var(--warning);
+            border-left: 5px solid var(--warning-border);
+        }
+
+        .info-success {
+            background: var(--success);
+            border-left: 5px solid #4caf50;
+        }
+
+        #apiButton {
+            margin-top: 15px;
+            display: none;
+            background: var(--accent);
+            color: white;
+        }
+
+        #slidesContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 60px;
+        }
+
+        .slide-frame {
+            width: 1280px;
+            height: 720px;
+            border: none;
+            margin: 40px 0;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .credits {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 13px;
+            opacity: 0.6;
+        }
+
+        body::after {
+            content: "Genspark PDF Tool — xCarlosDevx";
+            position: fixed;
+            bottom: 20px;
+            right: 30px;
+            font-size: 12px;
+            opacity: 0.3;
+        }
+
+        @page {
+            size: 1280px 720px;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+
+            .panel {
+                display: none !important;
+            }
+
+            .slide-frame {
+                margin: 0;
+                box-shadow: none;
+                page-break-after: always;
+                width: 1280px !important;
+                height: 720px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="panel">
+        <h1>Generador de Presentación PDF</h1>
+
+        <textarea id="jsonInput"
+            placeholder='Pega aquí el JSON de la API o la URL completa con ?project_id='></textarea>
+
+        <div id="infoBox" class="info-box"></div>
+
+        <button id="apiButton" onclick="openApi()">Ir a la API</button>
+
+        <div class="buttons">
+            <button class="secondary" onclick="renderSlides()">Generar Slides</button>
+            <button class="primary" onclick="printSlides()">Descargar como PDF</button>
+        </div>
+    </div>
+    <footer class="credits">
+        Created by <strong>xCarlosDevx</strong> ·
+        <a href="https://github.com/xCarlosDevx" target="_blank">
+            View on GitHub
+        </a>
+    </footer>
+
+
+    <div id="slidesContainer"></div>
+
+    <script>
+        let pendingApiUrl = null;
+
+        function showMessage(message, type = "warning") {
+            const box = document.getElementById("infoBox");
+            box.className = "info-box " + (type === "success" ? "info-success" : "info-warning");
+            box.innerHTML = message;
+            box.style.display = "block";
+        }
+
+        function openApi() {
+            if (pendingApiUrl) {
+                window.open(pendingApiUrl, "_blank");
+            }
+        }
+
+        function renderSlides() {
+            const input = document.getElementById('jsonInput').value.trim();
+            const container = document.getElementById('slidesContainer');
+            const apiButton = document.getElementById("apiButton");
+
+            container.innerHTML = '';
+            document.getElementById("infoBox").style.display = "none";
+            apiButton.style.display = "none";
+            pendingApiUrl = null;
+
+            // 🔹 Si es URL
+            if (input.startsWith("http")) {
+                try {
+                    const url = new URL(input);
+
+                    if (!url.searchParams.get("project_id")) {
+                        showMessage(`
+                        <strong>Necesitas la URL completa.</strong><br><br>
+                        Debe incluir el parámetro <code>?project_id=</code><br><br>
+                        Ejemplo:<br>
+                        https://gensparkspace.com/?project_id=TU_ID_AQUI
+                    `);
+                        return;
+                    }
+
+                    const projectId = url.searchParams.get("project_id");
+
+                    pendingApiUrl =
+                        `https://gensparkspace.com/api/project/slide_data?project_id=${projectId}`;
+
+                    showMessage(`
+                    <strong>Paso 1:</strong> Haz clic en el botón "Ir a la API".<br>
+                    <strong>Paso 2:</strong> Copia TODO el JSON que aparece.<br>
+                    <strong>Paso 3:</strong> Vuelve aquí y pégalo en el cuadro de texto.<br><br>
+                    Luego presiona "Generar Slides".
+                `, "success");
+
+                    apiButton.style.display = "block";
+                    return;
+
+                } catch (e) {
+                    showMessage("La URL no es válida.");
+                    return;
+                }
+            }
+
+            // 🔹 Si es JSON
+            try {
+                const jsonData = JSON.parse(input);
+                const slides = jsonData.data.file_contents;
+
+                slides.forEach(slide => {
+                    const iframe = document.createElement('iframe');
+                    iframe.className = 'slide-frame';
+                    container.appendChild(iframe);
+
+                    const doc = iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(slide.content);
+                    doc.close();
+
+                    iframe.onload = function () {
+                        iframe.contentWindow.document.body.style.margin = '0';
+                        iframe.contentWindow.document.body.style.overflow = 'hidden';
+                    };
+                });
+
+                window.scrollTo({ top: container.offsetTop, behavior: 'smooth' });
+
+            } catch (e) {
+                showMessage(`
+                El contenido no es JSON válido.<br><br>
+                Puedes pegar:
+                <ul>
+                    <li>El JSON completo de la API</li>
+                    <li>O la URL completa con <code>?project_id=</code></li>
+                </ul>
+            `);
+            }
+        }
+
+        function printSlides() {
+            if (document.querySelectorAll('.slide-frame').length === 0) {
+                showMessage("Primero debes generar la presentación.");
+                return;
+            }
+            window.print();
+        }
+    </script>
+
+</body>
+
+</html>
