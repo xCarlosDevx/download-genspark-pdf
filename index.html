@@ -143,14 +143,7 @@
             opacity: 0.6;
         }
 
-        body::after {
-            content: "Genspark PDF Tool — xCarlosDevx";
-            position: fixed;
-            bottom: 20px;
-            right: 30px;
-            font-size: 12px;
-            opacity: 0.3;
-        }
+
 
         @page {
             size: 1280px 720px;
@@ -172,6 +165,23 @@
                 page-break-after: always;
                 width: 1280px !important;
                 height: 720px !important;
+            }
+
+            footer {
+                display: none !important;
+            }
+
+            body::after {
+                content: "Genspark PDF Tool — xCarlosDevx";
+                position: fixed;
+                bottom: 20px;
+                right: 30px;
+                font-size: 12px;
+                opacity: 0.3;
+            }
+
+            .slide-frame:last-child {
+                page-break-after: auto;
             }
         }
     </style>
